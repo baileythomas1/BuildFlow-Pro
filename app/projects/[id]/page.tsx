@@ -8,6 +8,8 @@ import { FormField } from "@/components/FormField";
 import { Badge } from "@/components/Badge";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { FileList } from "@/components/FileList";
+import { EstimateList } from "@/components/EstimateList";
+import { InvoiceList } from "@/components/InvoiceList";
 import { healthBadge, statusBadge } from "@/lib/projects/badges";
 import type { Project, ProjectStatusValue } from "@/lib/projects/types";
 
@@ -293,6 +295,22 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="mt-8">
             <h2 className="mb-3 text-lg font-semibold text-navy">Files</h2>
             <FileList projectId={project.id} accessToken={accessToken} />
+          </div>
+        )}
+
+        {/* Estimates/Invoices aren't in the Employee nav per PRD 8 IA, and
+            Client only ever sees them through the (not-yet-built) portal. */}
+        {!project.archivedAt && canManage && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-navy">Estimates</h2>
+            <EstimateList projectId={project.id} accessToken={accessToken} />
+          </div>
+        )}
+
+        {!project.archivedAt && canManage && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-navy">Invoices</h2>
+            <InvoiceList projectId={project.id} accessToken={accessToken} />
           </div>
         )}
       </div>
