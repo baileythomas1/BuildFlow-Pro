@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api-client";
 import { FormField } from "@/components/FormField";
 import { Badge } from "@/components/Badge";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { FileList } from "@/components/FileList";
 import { healthBadge, statusBadge } from "@/lib/projects/badges";
 import type { Project, ProjectStatusValue } from "@/lib/projects/types";
 
@@ -285,6 +286,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               canManage={canManage}
               onTasksChanged={refreshProjectHealth}
             />
+          </div>
+        )}
+
+        {!project.archivedAt && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-navy">Files</h2>
+            <FileList projectId={project.id} accessToken={accessToken} />
           </div>
         )}
       </div>
