@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/passwords";
 import { signAccessToken, signRefreshToken } from "@/lib/auth/tokens";
 import { REFRESH_COOKIE_NAME, refreshCookieOptions } from "@/lib/auth/cookies";
+import {
+  getLockoutStatus,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts,
+} from "@/lib/auth/login-attempts";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -21,8 +26,21 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
   if (!user) return invalidCredentials();
 
+  const lockout = getLockoutStatus(user);
+  if (lockout.locked) {
+    return NextResponse.json(
+      { error: "Too many failed login attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(lockout.retryAfterSeconds) } }
+    );
+  }
+
   const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) return invalidCredentials();
+  if (!valid) {
+    await recordFailedLoginAttempt(user);
+    return invalidCredentials();
+  }
+
+  await resetFailedLoginAttempts(user.id);
 
   const accessToken = signAccessToken({ sub: user.id, companyId: user.companyId, role: user.role });
   const refreshToken = signRefreshToken({

@@ -82,15 +82,19 @@ model Company {
 // short-lived access tokens + rotating refresh tokens (tokenVersion bump revokes
 // all outstanding refresh tokens, e.g. on logout or password change).
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  companyId    String   @map("company_id") @db.Uuid
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         Role
-  name         String
-  tokenVersion Int      @default(0) @map("token_version")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                     String    @id @default(uuid()) @db.Uuid
+  companyId              String    @map("company_id") @db.Uuid
+  email                  String    @unique
+  passwordHash           String    @map("password_hash")
+  role                   Role
+  name                   String
+  tokenVersion           Int       @default(0) @map("token_version")
+  // Login brute-force stopgap (see lib/auth/login-attempts.ts): failedLoginAttempts
+  // counts failures since failedLoginWindowStart; both reset on a successful login.
+  failedLoginAttempts    Int       @default(0) @map("failed_login_attempts")
+  failedLoginWindowStart DateTime? @map("failed_login_window_start")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   company       Company        @relation(fields: [companyId], references: [id])
   assignedTasks Task[]         @relation("TaskAssignee")
