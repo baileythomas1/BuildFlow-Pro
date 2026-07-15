@@ -81,6 +81,7 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate/10 text-slate/60">
+                <th className="px-4 py-2 font-medium">Title</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium">Total</th>
                 <th className="px-4 py-2 font-medium">Created</th>
@@ -92,6 +93,9 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
                 const badge = estimateStatusBadge(estimate.status);
                 return (
                   <tr key={estimate.id} className="border-b border-slate/5 last:border-0">
+                    <td className="px-4 py-2 text-slate">
+                      {estimate.title ?? <span className="italic text-slate/40">Untitled Estimate</span>}
+                    </td>
                     <td className="px-4 py-2">
                       <Badge label={badge.label} tone={badge.tone} />
                     </td>

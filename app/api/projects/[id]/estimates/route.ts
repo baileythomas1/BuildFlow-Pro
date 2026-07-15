@@ -10,6 +10,7 @@ type RouteCtx = { params: Promise<{ id: string }> };
 
 const ESTIMATE_SUMMARY_SELECT = {
   id: true,
+  title: true,
   status: true,
   total: true,
   approvedAt: true,
@@ -71,7 +72,12 @@ export const POST = withAuth<RouteCtx>(
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
-    const { lineItems } = body as Record<string, unknown>;
+    const { lineItems, title } = body as Record<string, unknown>;
+
+    if (title !== undefined && title !== null && typeof title !== "string") {
+      return NextResponse.json({ error: "title must be a string" }, { status: 400 });
+    }
+    const resolvedTitle = typeof title === "string" && title.trim() ? title.trim() : null;
 
     const parsedLineItems = Array.isArray(lineItems) ? lineItems.map(parseLineItemInput) : [];
     if (Array.isArray(lineItems) && parsedLineItems.some((item) => item === null)) {
@@ -83,7 +89,7 @@ export const POST = withAuth<RouteCtx>(
     const validLineItems = parsedLineItems.filter((item) => item !== null);
 
     const estimate = await prisma.$transaction(async (tx) => {
-      const created = await tx.estimate.create({ data: { projectId } });
+      const created = await tx.estimate.create({ data: { projectId, title: resolvedTitle } });
       if (validLineItems.length > 0) {
         await tx.estimateLineItem.createMany({
           data: validLineItems.map((item) => ({ ...item, estimateId: created.id })),

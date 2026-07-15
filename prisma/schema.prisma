@@ -206,6 +206,7 @@ model File {
 model Estimate {
   id         String         @id @default(uuid()) @db.Uuid
   projectId  String         @map("project_id") @db.Uuid
+  title      String?
   status     EstimateStatus @default(DRAFT)
   total      Decimal        @default(0) @db.Decimal(12, 2)
   approvedAt DateTime?      @map("approved_at")

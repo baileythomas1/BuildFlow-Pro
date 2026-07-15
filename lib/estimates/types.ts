@@ -20,6 +20,7 @@ export type ChangeOrder = {
 
 export type EstimateSummary = {
   id: string;
+  title: string | null;
   status: EstimateStatusValue;
   total: string;
   approvedAt: string | null;
