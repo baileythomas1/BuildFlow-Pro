@@ -1,5 +1,7 @@
 import { ProjectStatus } from "@/lib/generated/prisma/client";
 
+export { parseOptionalDate } from "@/lib/validate";
+
 const PROJECT_STATUSES = Object.values(ProjectStatus);
 
 export function isValidProjectStatus(value: unknown): value is ProjectStatus {
@@ -11,12 +13,4 @@ export function parseBudget(value: unknown): string | null {
   const num = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(num) || num < 0) return null;
   return num.toFixed(2);
-}
-
-export function parseOptionalDate(value: unknown): { ok: true; date: Date | null } | { ok: false } {
-  if (value === undefined || value === null || value === "") return { ok: true, date: null };
-  if (typeof value !== "string") return { ok: false };
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return { ok: false };
-  return { ok: true, date };
 }

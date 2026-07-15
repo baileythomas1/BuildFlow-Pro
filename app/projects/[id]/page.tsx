@@ -6,6 +6,7 @@ import { useRequireAuth } from "@/lib/use-require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { FormField } from "@/components/FormField";
 import { Badge } from "@/components/Badge";
+import { KanbanBoard } from "@/components/KanbanBoard";
 import { healthBadge, statusBadge } from "@/lib/projects/badges";
 import type { Project, ProjectStatusValue } from "@/lib/projects/types";
 
@@ -137,12 +138,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <main className="flex-1 bg-off-white px-6 py-8">
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-5xl">
         <Link href="/projects" className="text-sm text-sky hover:underline">
           &larr; Back to Projects
         </Link>
 
-        <div className="mt-4 rounded-lg border border-slate/10 bg-white p-8 shadow-sm">
+        <div className="mt-4 max-w-2xl rounded-lg border border-slate/10 bg-white p-8 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold text-navy">{project.name}</h1>
@@ -261,6 +262,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </form>
           )}
         </div>
+
+        {!project.archivedAt && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-navy">Tasks</h2>
+            <KanbanBoard
+              projectId={project.id}
+              accessToken={accessToken}
+              currentUserId={user.id}
+              canManage={canManage}
+            />
+          </div>
+        )}
       </div>
     </main>
   );

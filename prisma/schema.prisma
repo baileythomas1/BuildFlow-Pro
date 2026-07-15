@@ -156,12 +156,16 @@ model Project {
 }
 
 // PRD 11: belongs to Project; belongs to User (assignee)
+// order: not in the original PRD 11 field list, added to support PRD 9.3's
+// drag-and-drop reordering — position within its (projectId, status) column,
+// resequenced to a dense 0..n-1 range on every move (see lib/tasks/reorder.ts).
 model Task {
   id         String     @id @default(uuid()) @db.Uuid
   projectId  String     @map("project_id") @db.Uuid
   assigneeId String?    @map("assignee_id") @db.Uuid
   title      String
   status     TaskStatus @default(TODO)
+  order      Int        @default(0) @map("position")
   dueDate    DateTime?  @map("due_date")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
@@ -170,6 +174,7 @@ model Task {
   assignee User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
 
   @@index([projectId])
+  @@index([projectId, status])
   @@index([assigneeId])
   @@map("tasks")
 }
