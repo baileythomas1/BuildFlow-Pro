@@ -7,16 +7,8 @@ import { TEST_PREFIX, cleanupTestCompanies, uniqueEmail } from "./helpers";
 // PRD 18: "The full signup -> project -> estimate approval -> invoice ->
 // payment flow works end-to-end against real infrastructure." Driven through
 // real browser pages (not just API calls) so it also exercises the UI wiring,
+// including the portal's Estimates tab (PRD 9.5's client approval workflow),
 // with a real Stripe test-mode Checkout payment using the standard test card.
-//
-// There is currently no UI anywhere in the app that calls the
-// approve/reject estimate endpoints (grep confirms it) — the client portal
-// only ever surfaces a read-only overview, files, invoices, and messages.
-// So the estimate-approval step here calls the API directly, the same way a
-// real approve action would (e.g. from a future emailed link), rather than
-// exercising a UI control that doesn't exist. This is flagged as a finding,
-// not silently patched over, since building that UI is a new feature and
-// out of scope for this verification-only pass.
 //
 // Webhook delivery during a headless test run isn't guaranteed (no `stripe
 // listen` forwarder is running), so payment sync is verified via the same
@@ -109,7 +101,7 @@ test("owner builds and sends an estimate", async ({ page }) => {
 // Reproduces the manual DB link-up used throughout this app's development to
 // test the CLIENT role, standing in for the not-yet-built homeowner invite
 // flow (Client.userId is nullable and nothing sets it from any UI).
-test("homeowner login is linked and approves the estimate", async ({ request }) => {
+test("homeowner login is linked", async ({ request }) => {
   const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId } });
   const passwordHash = await bcrypt.hash(clientPassword, 12);
   const user = await prisma.user.create({
@@ -128,13 +120,28 @@ test("homeowner login is linked and approves the estimate", async ({ request }) 
   });
   expect(loginRes.ok()).toBeTruthy();
   clientToken = (await loginRes.json()).accessToken;
+});
 
-  // No UI anywhere calls this endpoint (see file header) — calling it
-  // directly is the only way to exercise this step today.
-  const approveRes = await request.post(`/api/estimates/${estimateId}/approve`, {
-    headers: { Authorization: `Bearer ${clientToken}` },
-  });
-  expect(approveRes.ok()).toBeTruthy();
+test("homeowner approves the estimate from the portal", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(clientLoginEmail);
+  await page.getByLabel("Password").fill(clientPassword);
+  await page.getByRole("button", { name: /log in/i }).click();
+  await page.waitForURL("**/portal", { timeout: 15_000 });
+
+  await page.goto("/portal/estimates");
+  await expect(page.getByText("Full Flow — Phase 1")).toBeVisible();
+  await expect(page.getByText("Needs your review")).toBeVisible();
+  await page.getByText("Full Flow — Phase 1").click();
+
+  await page.waitForURL(`**/portal/estimates/${estimateId}`, { timeout: 15_000 });
+  await expect(page.getByText("Total: $5,500.00")).toBeVisible();
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Approve" }).click();
+
+  await expect(page.getByText("Approved", { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
 
   const estimate = await prisma.estimate.findUniqueOrThrow({ where: { id: estimateId } });
   expect(estimate.status).toBe("APPROVED");

@@ -39,3 +39,23 @@ export type PortalComment = {
   createdAt: string;
   author: { id: string; name: string };
 };
+
+export type PortalEstimate = {
+  id: string;
+  title: string | null;
+  status: "SENT" | "APPROVED" | "REJECTED";
+  total: string;
+  createdAt: string;
+};
+
+export type PortalEstimateLineItem = {
+  id: string;
+  description: string;
+  quantity: string;
+  unitCost: string;
+  markup: string;
+};
+
+export type PortalEstimateDetail = PortalEstimate & {
+  lineItems: PortalEstimateLineItem[];
+};

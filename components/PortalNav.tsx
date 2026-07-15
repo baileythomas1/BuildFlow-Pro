@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/portal", label: "Overview" },
+  { href: "/portal/estimates", label: "Estimates" },
   { href: "/portal/files", label: "Files" },
   { href: "/portal/invoices", label: "Invoices" },
   { href: "/portal/messages", label: "Updates" },
@@ -15,7 +16,7 @@ export function PortalNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-slate/10 bg-white pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto grid max-w-md grid-cols-4">
+      <div className="mx-auto grid max-w-md grid-cols-5">
         {TABS.map((tab) => {
           const active = pathname === tab.href;
           return (

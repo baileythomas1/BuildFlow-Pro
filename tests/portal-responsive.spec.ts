@@ -2,7 +2,7 @@ import { test, expect, devices } from "@playwright/test";
 import { TEST_PREFIX, signupCompany, createProject, linkClientLogin, cleanupTestCompanies, uniqueEmail } from "./helpers";
 
 // PRD 18 + PRD 9.6 ("optimize for mobile first; homeowners will check this
-// primarily from their phones"): verifies the 4 portal pages render usably
+// primarily from their phones"): verifies the 5 portal pages render usably
 // at phone widths — no horizontal overflow, the bottom tab bar is visible
 // and tappable, and each page's core content is visible.
 
@@ -15,6 +15,7 @@ const VIEWPORTS = [
 
 let clientLoginEmail: string;
 const clientPassword = "correcthorse123";
+let estimateId: string;
 
 test.beforeAll(async ({ playwright }) => {
   await cleanupTestCompanies();
@@ -55,6 +56,19 @@ test.beforeAll(async ({ playwright }) => {
     data: { body: "A status update long enough to wrap onto multiple lines on a narrow phone screen, testing overflow." },
   });
 
+  const estimateRes = await request.post(`/api/projects/${projectId}/estimates`, {
+    headers: { Authorization: `Bearer ${owner.accessToken}` },
+    data: {
+      title: "Responsive test estimate with a longer title to stress layout",
+      lineItems: [{ description: "Materials with a fairly long description to stress layout", quantity: "3", unitCost: "450.50", markup: "12" }],
+    },
+  });
+  estimateId = (await estimateRes.json()).estimate.id;
+  await request.patch(`/api/estimates/${estimateId}`, {
+    headers: { Authorization: `Bearer ${owner.accessToken}` },
+    data: { status: "SENT" },
+  });
+
   await request.dispose();
 });
 
@@ -69,6 +83,44 @@ const PORTAL_PAGES = [
   { path: "/portal/messages", heading: "Updates" },
 ];
 
+async function checkResponsive(
+  page: import("@playwright/test").Page,
+  path: string,
+  heading: string | RegExp,
+  viewport: { width: number; height: number }
+) {
+  await page.goto(path);
+  await page.waitForLoadState("networkidle");
+
+  await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  expect(
+    scrollWidth,
+    `${path} at ${viewport.width}px: scrollWidth ${scrollWidth} exceeds viewport clientWidth ${clientWidth}`
+  ).toBeLessThanOrEqual(clientWidth + 1); // +1 for sub-pixel rounding
+
+  const nav = page.locator("nav").last();
+  await expect(nav).toBeVisible();
+  const navBox = await nav.boundingBox();
+  expect(navBox).not.toBeNull();
+  if (navBox) {
+    expect(navBox.y + navBox.height).toBeLessThanOrEqual(viewport.height + 1);
+    expect(navBox.y).toBeGreaterThan(0);
+  }
+
+  const navLinks = nav.locator("a, button");
+  const count = await navLinks.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    const box = await navLinks.nth(i).boundingBox();
+    if (box) {
+      expect(box.height, `tab bar item ${i} on ${path} is under the 44px WCAG tap-target minimum`).toBeGreaterThanOrEqual(40);
+    }
+  }
+}
+
 for (const viewport of VIEWPORTS) {
   test.describe(`${viewport.name} (${viewport.width}x${viewport.height})`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
@@ -81,38 +133,42 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole("button", { name: /log in/i }).click();
         await page.waitForURL("**/portal", { timeout: 15_000 });
 
-        await page.goto(portalPage.path);
-        await page.waitForLoadState("networkidle");
-
-        await expect(page.getByRole("heading", { name: portalPage.heading })).toBeVisible();
-
-        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-        const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
-        expect(
-          scrollWidth,
-          `${portalPage.path} at ${viewport.width}px: scrollWidth ${scrollWidth} exceeds viewport clientWidth ${clientWidth}`
-        ).toBeLessThanOrEqual(clientWidth + 1); // +1 for sub-pixel rounding
-
-        const nav = page.locator("nav").last();
-        await expect(nav).toBeVisible();
-        const navBox = await nav.boundingBox();
-        expect(navBox).not.toBeNull();
-        if (navBox) {
-          expect(navBox.y + navBox.height).toBeLessThanOrEqual(viewport.height + 1);
-          expect(navBox.y).toBeGreaterThan(0);
-        }
-
-        const navLinks = nav.locator("a, button");
-        const count = await navLinks.count();
-        expect(count).toBeGreaterThan(0);
-        for (let i = 0; i < count; i++) {
-          const box = await navLinks.nth(i).boundingBox();
-          if (box) {
-            expect(box.height, `tab bar item ${i} on ${portalPage.path} is under the 44px WCAG tap-target minimum`).toBeGreaterThanOrEqual(40);
-          }
-        }
+        await checkResponsive(page, portalPage.path, portalPage.heading, viewport);
       });
     }
+
+    test(`/portal/estimates has no horizontal overflow and shows the tab bar`, async ({ page }) => {
+      await page.goto("/login");
+      await page.getByLabel("Email").fill(clientLoginEmail);
+      await page.getByLabel("Password").fill(clientPassword);
+      await page.getByRole("button", { name: /log in/i }).click();
+      await page.waitForURL("**/portal", { timeout: 15_000 });
+
+      await checkResponsive(page, "/portal/estimates", "Estimates", viewport);
+    });
+
+    // The estimate detail page renders the Approve/Reject action bar
+    // instead of the tab bar's own semantics — worth its own overflow check
+    // since it's the one portal page with long line-item text and buttons
+    // that could realistically overflow a narrow phone screen.
+    test(`/portal/estimates/:id has no horizontal overflow and Approve/Reject are tappable`, async ({ page }) => {
+      await page.goto("/login");
+      await page.getByLabel("Email").fill(clientLoginEmail);
+      await page.getByLabel("Password").fill(clientPassword);
+      await page.getByRole("button", { name: /log in/i }).click();
+      await page.waitForURL("**/portal", { timeout: 15_000 });
+
+      await checkResponsive(page, `/portal/estimates/${estimateId}`, /responsive test estimate/i, viewport);
+
+      const approveButton = page.getByRole("button", { name: "Approve" });
+      const rejectButton = page.getByRole("button", { name: "Reject" });
+      await expect(approveButton).toBeVisible();
+      await expect(rejectButton).toBeVisible();
+      const approveBox = await approveButton.boundingBox();
+      const rejectBox = await rejectButton.boundingBox();
+      expect(approveBox?.height ?? 0).toBeGreaterThanOrEqual(40);
+      expect(rejectBox?.height ?? 0).toBeGreaterThanOrEqual(40);
+    });
 
     test(`main desktop NavBar is hidden on /portal routes`, async ({ page }) => {
       await page.goto("/login");
