@@ -61,6 +61,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       .catch((err) => setLoadError(err instanceof Error ? err.message : "Failed to load project"));
   }, [authLoading, user, accessToken, id]);
 
+  // health is computed server-side from the project's tasks, so any task
+  // mutation in the Kanban board below can change it — refetch to pick that
+  // up rather than letting the badge go stale until the next full reload.
+  function refreshProjectHealth() {
+    apiFetch<{ project: Project }>(`/api/projects/${id}`, accessToken)
+      .then((data) => setProject(data.project))
+      .catch(() => {
+        // Non-fatal: the board itself already reflects the change; the
+        // health badge just stays at its last known value until next load.
+      });
+  }
+
   if (authLoading || !user) {
     return (
       <main className="flex flex-1 items-center justify-center bg-off-white">
@@ -271,6 +283,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               accessToken={accessToken}
               currentUserId={user.id}
               canManage={canManage}
+              onTasksChanged={refreshProjectHealth}
             />
           </div>
         )}

@@ -23,11 +23,17 @@ export function KanbanBoard({
   accessToken,
   currentUserId,
   canManage,
+  onTasksChanged,
 }: {
   projectId: string;
   accessToken: string | null;
   currentUserId: string;
   canManage: boolean;
+  // Fired after any mutation that can change the project's computed health
+  // (status/order move, create, due-date edit, delete) — the project's
+  // health is fetched separately on the parent page and won't otherwise
+  // notice these changes.
+  onTasksChanged?: () => void;
 }) {
   const [grouped, setGrouped] = useState<GroupedTasks>(EMPTY_GROUPED);
   const [assignees, setAssignees] = useState<TaskAssignee[]>([]);
@@ -94,6 +100,7 @@ export function KanbanBoard({
         accessToken
       );
       setGrouped(fresh.tasks);
+      onTasksChanged?.();
     } catch (err) {
       setGrouped(previous);
       setError(err instanceof Error ? err.message : "Failed to move task");
@@ -111,6 +118,7 @@ export function KanbanBoard({
       });
       setGrouped((prev) => ({ ...prev, [status]: [...prev[status], task] }));
       setNewTitles((prev) => ({ ...prev, [status]: "" }));
+      onTasksChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create task");
     }
@@ -161,6 +169,7 @@ export function KanbanBoard({
               [updated.status]: prev[updated.status].map((t) => (t.id === updated.id ? updated : t)),
             }));
             setEditingTask(null);
+            onTasksChanged?.();
           }}
           onDeleted={(taskId) => {
             setGrouped((prev) => ({
@@ -169,6 +178,7 @@ export function KanbanBoard({
               DONE: prev.DONE.filter((t) => t.id !== taskId),
             }));
             setEditingTask(null);
+            onTasksChanged?.();
           }}
         />
       )}
