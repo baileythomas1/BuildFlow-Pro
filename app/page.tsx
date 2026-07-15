@@ -1,12 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const router = useRouter();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && user?.role === "CLIENT") {
+      router.replace("/portal");
+    }
+  }, [loading, user, router]);
+
+  if (loading || user?.role === "CLIENT") {
     return (
       <main className="flex flex-1 items-center justify-center bg-off-white">
         <p className="text-slate/60">Loading...</p>

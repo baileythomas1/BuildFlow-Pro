@@ -96,13 +96,14 @@ model User {
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")
 
-  company       Company        @relation(fields: [companyId], references: [id])
-  assignedTasks Task[]         @relation("TaskAssignee")
-  uploadedFiles File[]         @relation("FileUploader")
-  notifications Notification[]
-  auditLogs     AuditLog[]     @relation("AuditLogActor")
-  changeOrders  ChangeOrder[]  @relation("ChangeOrderCreator")
-  clientProfile Client?
+  company        Company         @relation(fields: [companyId], references: [id])
+  assignedTasks  Task[]          @relation("TaskAssignee")
+  uploadedFiles  File[]          @relation("FileUploader")
+  notifications  Notification[]
+  auditLogs      AuditLog[]      @relation("AuditLogActor")
+  changeOrders   ChangeOrder[]   @relation("ChangeOrderCreator")
+  statusComments StatusComment[] @relation("StatusCommentAuthor")
+  clientProfile  Client?
 
   @@index([companyId])
   @@map("users")
@@ -144,12 +145,13 @@ model Project {
   createdAt  DateTime      @default(now()) @map("created_at")
   updatedAt  DateTime      @updatedAt @map("updated_at")
 
-  company   Company    @relation(fields: [companyId], references: [id])
-  client    Client     @relation(fields: [clientId], references: [id])
-  tasks     Task[]
-  files     File[]
-  estimates Estimate[]
-  invoices  Invoice[]
+  company        Company         @relation(fields: [companyId], references: [id])
+  client         Client          @relation(fields: [clientId], references: [id])
+  tasks          Task[]
+  files          File[]
+  estimates      Estimate[]
+  invoices       Invoice[]
+  statusComments StatusComment[]
 
   @@index([companyId])
   @@index([clientId])
@@ -195,6 +197,26 @@ model File {
 
   @@index([projectId])
   @@map("files")
+}
+
+// PRD 9.6: "a one-way status-comment thread with the office" — not in the
+// original PRD 11 field list, added now that the portal explicitly needs it.
+// One-way by construction: only staff (Owner/Admin/PM) can create a comment;
+// the Client role only ever reads the thread. No reply/threading, no
+// real-time delivery — that gap is deliberate (PRD 10 defers real-time chat
+// to Phase 2 specifically to avoid websocket infrastructure).
+model StatusComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  author  User    @relation("StatusCommentAuthor", fields: [authorId], references: [id])
+
+  @@index([projectId])
+  @@map("status_comments")
 }
 
 // PRD 11: belongs to Project; has many EstimateLineItems

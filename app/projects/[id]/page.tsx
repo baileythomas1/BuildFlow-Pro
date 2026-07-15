@@ -10,6 +10,7 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { FileList } from "@/components/FileList";
 import { EstimateList } from "@/components/EstimateList";
 import { InvoiceList } from "@/components/InvoiceList";
+import { StatusCommentThread } from "@/components/StatusCommentThread";
 import { healthBadge, statusBadge } from "@/lib/projects/badges";
 import type { Project, ProjectStatusValue } from "@/lib/projects/types";
 
@@ -298,8 +299,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Estimates/Invoices aren't in the Employee nav per PRD 8 IA, and
-            Client only ever sees them through the (not-yet-built) portal. */}
+        {/* Estimates/Invoices aren't in the Employee nav per PRD 8 IA; the
+            Client role sees a sanitized view of them through /portal instead. */}
         {!project.archivedAt && canManage && (
           <div className="mt-8">
             <h2 className="mb-3 text-lg font-semibold text-navy">Estimates</h2>
@@ -311,6 +312,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="mt-8">
             <h2 className="mb-3 text-lg font-semibold text-navy">Invoices</h2>
             <InvoiceList projectId={project.id} accessToken={accessToken} />
+          </div>
+        )}
+
+        {!project.archivedAt && canManage && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold text-navy">Client Updates</h2>
+            <p className="mb-3 text-xs text-slate/50">
+              Posted here, read-only in the homeowner portal — one-way, not a live chat.
+            </p>
+            <StatusCommentThread projectId={project.id} accessToken={accessToken} />
           </div>
         )}
       </div>

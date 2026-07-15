@@ -9,3 +9,11 @@ export async function resolveClientProject(userId: string, companyId: string, pr
   if (!client) return null;
   return prisma.project.findFirst({ where: { id: projectId, companyId, clientId: client.id } });
 }
+
+// For the portal, where the client doesn't know their project id upfront —
+// Phase 1 assumes exactly one project per Client (PRD 11).
+export async function resolveOwnClientProject(userId: string, companyId: string) {
+  const client = await prisma.client.findFirst({ where: { userId, companyId } });
+  if (!client) return null;
+  return prisma.project.findFirst({ where: { companyId, clientId: client.id, archivedAt: null } });
+}
