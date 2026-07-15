@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { NotificationBell } from "@/components/NotificationBell";
 
-const OWNER_ADMIN_ROLES = ["OWNER", "ADMIN"];
+// PRD 8: Dashboard is Owner/Admin/PM; Employees is Owner/Admin only.
+const DASHBOARD_ROLES = ["OWNER", "ADMIN", "PM"];
+const EMPLOYEES_ROLES = ["OWNER", "ADMIN"];
 
 export function NavBar() {
   const { user, logout } = useAuth();
@@ -23,7 +25,7 @@ export function NavBar() {
         <Link href="/" className="font-heading text-lg font-semibold text-navy">
           BuildFlow Pro
         </Link>
-        {OWNER_ADMIN_ROLES.includes(user.role) && (
+        {DASHBOARD_ROLES.includes(user.role) && (
           <Link href="/dashboard" className="text-sm font-medium text-slate hover:text-navy">
             Dashboard
           </Link>
@@ -33,7 +35,7 @@ export function NavBar() {
             Projects
           </Link>
         )}
-        {OWNER_ADMIN_ROLES.includes(user.role) && (
+        {EMPLOYEES_ROLES.includes(user.role) && (
           <Link href="/employees" className="text-sm font-medium text-slate hover:text-navy">
             Employees
           </Link>

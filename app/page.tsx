@@ -13,12 +13,15 @@ export default function Home() {
     if (loading || !user) return;
     if (user.role === "CLIENT") {
       router.replace("/portal");
-    } else if (user.role === "OWNER" || user.role === "ADMIN") {
+    } else if (user.role === "OWNER" || user.role === "ADMIN" || user.role === "PM") {
       router.replace("/dashboard");
     }
   }, [loading, user, router]);
 
-  if (loading || user?.role === "CLIENT" || user?.role === "OWNER" || user?.role === "ADMIN") {
+  const redirectsAway =
+    user?.role === "CLIENT" || user?.role === "OWNER" || user?.role === "ADMIN" || user?.role === "PM";
+
+  if (loading || redirectsAway) {
     return (
       <main className="flex flex-1 items-center justify-center bg-off-white">
         <p className="text-slate/60">Loading...</p>

@@ -8,7 +8,7 @@ import { Badge } from "@/components/Badge";
 import { invoiceStatusBadge } from "@/lib/invoices/badges";
 import type { DashboardData } from "@/lib/dashboard/types";
 
-const CAN_VIEW_ROLES = ["OWNER", "ADMIN"];
+const CAN_VIEW_ROLES = ["OWNER", "ADMIN", "PM"];
 
 function money(value: string) {
   return `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
