@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/lib/auth/middleware";
 import { EstimateStatus, Role } from "@/lib/generated/prisma/client";
+import { notifyEstimateDecision } from "@/lib/notifications/events";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -11,7 +12,7 @@ export const POST = withAuth<RouteCtx>(
 
     const estimate = await prisma.estimate.findFirst({
       where: { id, project: { companyId: auth.companyId } },
-      include: { project: { select: { clientId: true } } },
+      include: { project: { select: { id: true, name: true, clientId: true } } },
     });
     if (!estimate) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -34,6 +35,15 @@ export const POST = withAuth<RouteCtx>(
     const updated = await prisma.estimate.update({
       where: { id: estimate.id },
       data: { status: EstimateStatus.REJECTED },
+    });
+
+    await notifyEstimateDecision({
+      estimateId: updated.id,
+      estimateTitle: updated.title,
+      status: "REJECTED",
+      projectId: estimate.project.id,
+      projectName: estimate.project.name,
+      companyId: auth.companyId,
     });
 
     return NextResponse.json({ estimate: updated });

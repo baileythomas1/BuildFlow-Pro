@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { InvoiceStatus } from "@/lib/generated/prisma/client";
+import { notifyPaidInvoice } from "@/lib/invoices/notify-paid";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -43,6 +44,9 @@ export async function GET(req: NextRequest) {
         await prisma.invoice.update({
           where: { id: invoice.id },
           data: { status: InvoiceStatus.PAID, stripePaymentId: paymentIntentId },
+        });
+        await notifyPaidInvoice(invoice.id).catch((error) => {
+          console.error("Failed to send invoice-paid notifications:", error);
         });
         reconciledToPaid++;
       }

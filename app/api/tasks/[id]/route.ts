@@ -5,6 +5,7 @@ import { Role, TaskStatus } from "@/lib/generated/prisma/client";
 import { isValidTaskStatus } from "@/lib/tasks/validate";
 import { parseOptionalDate } from "@/lib/validate";
 import { moveTask, resequenceColumn } from "@/lib/tasks/reorder";
+import { notifyTaskAssigned } from "@/lib/notifications/events";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -53,6 +54,7 @@ export const PATCH = withAuth<RouteCtx>(
       fieldUpdates.title = title.trim();
     }
 
+    let newlyAssigned: { id: string; name: string; email: string } | null = null;
     if (assigneeId !== undefined) {
       if (assigneeId === null) {
         fieldUpdates.assigneeId = null;
@@ -62,11 +64,17 @@ export const PATCH = withAuth<RouteCtx>(
         }
         const assignee = await prisma.user.findFirst({
           where: { id: assigneeId, companyId: auth.companyId },
+          select: ASSIGNEE_SELECT,
         });
         if (!assignee) {
           return NextResponse.json({ error: "Invalid assignee" }, { status: 400 });
         }
         fieldUpdates.assigneeId = assigneeId;
+        // Only notify on an actual change to a different person, not a
+        // no-op re-save of the same assignee.
+        if (assigneeId !== task.assigneeId) {
+          newlyAssigned = assignee;
+        }
       }
     }
 
@@ -104,6 +112,22 @@ export const PATCH = withAuth<RouteCtx>(
       where: { id: task.id },
       include: { assignee: { select: ASSIGNEE_SELECT } },
     });
+
+    if (newlyAssigned && result) {
+      const project = await prisma.project.findUnique({
+        where: { id: task.projectId },
+        select: { name: true },
+      });
+      if (project) {
+        await notifyTaskAssigned({
+          assignee: newlyAssigned,
+          taskTitle: result.title,
+          taskId: result.id,
+          projectId: task.projectId,
+          projectName: project.name,
+        });
+      }
+    }
 
     return NextResponse.json({ task: result });
   },

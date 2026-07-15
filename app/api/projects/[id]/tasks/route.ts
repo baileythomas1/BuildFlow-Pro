@@ -4,6 +4,7 @@ import { withAuth } from "@/lib/auth/middleware";
 import { Role, TaskStatus } from "@/lib/generated/prisma/client";
 import { isValidTaskStatus } from "@/lib/tasks/validate";
 import { parseOptionalDate } from "@/lib/validate";
+import { notifyTaskAssigned } from "@/lib/notifications/events";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -66,12 +67,14 @@ export const POST = withAuth<RouteCtx>(
     }
 
     let resolvedAssigneeId: string | null = null;
+    let assignee: { id: string; name: string; email: string } | null = null;
     if (assigneeId !== undefined && assigneeId !== null) {
       if (typeof assigneeId !== "string") {
         return NextResponse.json({ error: "Invalid assignee" }, { status: 400 });
       }
-      const assignee = await prisma.user.findFirst({
+      assignee = await prisma.user.findFirst({
         where: { id: assigneeId, companyId: auth.companyId },
+        select: ASSIGNEE_SELECT,
       });
       if (!assignee) {
         return NextResponse.json({ error: "Invalid assignee" }, { status: 400 });
@@ -97,6 +100,16 @@ export const POST = withAuth<RouteCtx>(
       },
       include: { assignee: { select: ASSIGNEE_SELECT } },
     });
+
+    if (assignee) {
+      await notifyTaskAssigned({
+        assignee,
+        taskTitle: task.title,
+        taskId: task.id,
+        projectId,
+        projectName: project.name,
+      });
+    }
 
     return NextResponse.json({ task }, { status: 201 });
   },

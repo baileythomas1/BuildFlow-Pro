@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { NotificationBell } from "@/components/NotificationBell";
+
+const OWNER_ADMIN_ROLES = ["OWNER", "ADMIN"];
 
 export function NavBar() {
   const { user, logout } = useAuth();
@@ -20,13 +23,24 @@ export function NavBar() {
         <Link href="/" className="font-heading text-lg font-semibold text-navy">
           BuildFlow Pro
         </Link>
+        {OWNER_ADMIN_ROLES.includes(user.role) && (
+          <Link href="/dashboard" className="text-sm font-medium text-slate hover:text-navy">
+            Dashboard
+          </Link>
+        )}
         {user.role !== "CLIENT" && (
           <Link href="/projects" className="text-sm font-medium text-slate hover:text-navy">
             Projects
           </Link>
         )}
+        {OWNER_ADMIN_ROLES.includes(user.role) && (
+          <Link href="/employees" className="text-sm font-medium text-slate hover:text-navy">
+            Employees
+          </Link>
+        )}
       </div>
       <div className="flex items-center gap-4 text-sm">
+        <NotificationBell />
         <span className="text-slate/70">
           {user.name} <span className="text-slate/40">&middot;</span> {user.role}
         </span>

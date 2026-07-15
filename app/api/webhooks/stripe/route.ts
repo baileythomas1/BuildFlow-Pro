@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { InvoiceStatus } from "@/lib/generated/prisma/client";
+import { notifyPaidInvoice } from "@/lib/invoices/notify-paid";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -45,11 +46,19 @@ export async function POST(req: NextRequest) {
             : (session.payment_intent?.id ?? null);
 
         // updateMany + a status guard makes this idempotent: Stripe retries
-        // webhook delivery, and an already-PAID invoice just matches zero rows.
-        await prisma.invoice.updateMany({
+        // webhook delivery, and an already-PAID invoice just matches zero
+        // rows — count tells us whether this call is the one that actually
+        // flipped it, so notifications fire exactly once.
+        const updated = await prisma.invoice.updateMany({
           where: { id: invoiceId, status: { not: InvoiceStatus.PAID } },
           data: { status: InvoiceStatus.PAID, stripePaymentId: paymentIntentId },
         });
+
+        if (updated.count > 0) {
+          await notifyPaidInvoice(invoiceId).catch((error) => {
+            console.error("Failed to send invoice-paid notifications:", error);
+          });
+        }
       }
     }
   }

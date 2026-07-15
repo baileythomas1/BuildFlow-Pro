@@ -10,12 +10,15 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user?.role === "CLIENT") {
+    if (loading || !user) return;
+    if (user.role === "CLIENT") {
       router.replace("/portal");
+    } else if (user.role === "OWNER" || user.role === "ADMIN") {
+      router.replace("/dashboard");
     }
   }, [loading, user, router]);
 
-  if (loading || user?.role === "CLIENT") {
+  if (loading || user?.role === "CLIENT" || user?.role === "OWNER" || user?.role === "ADMIN") {
     return (
       <main className="flex flex-1 items-center justify-center bg-off-white">
         <p className="text-slate/60">Loading...</p>

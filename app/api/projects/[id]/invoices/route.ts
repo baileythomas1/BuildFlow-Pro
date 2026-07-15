@@ -5,6 +5,7 @@ import { Role } from "@/lib/generated/prisma/client";
 import { resolveClientProject } from "@/lib/client-access";
 import { parseAmount } from "@/lib/invoices/validate";
 import { parseOptionalDate } from "@/lib/validate";
+import { notifyInvoiceSent } from "@/lib/notifications/events";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -65,6 +66,7 @@ export const POST = withAuth<RouteCtx>(
 
     const project = await prisma.project.findFirst({
       where: { id: projectId, companyId: auth.companyId },
+      include: { client: true, company: { select: { name: true } } },
     });
     if (!project) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -110,6 +112,15 @@ export const POST = withAuth<RouteCtx>(
         dueDate: dueDateResult.date,
       },
       select: INVOICE_SELECT,
+    });
+
+    await notifyInvoiceSent({
+      invoiceId: invoice.id,
+      description: invoice.description,
+      amount: invoice.amount.toString(),
+      projectName: project.name,
+      companyName: project.company.name,
+      client: { userId: project.client.userId, email: project.client.email, name: project.client.name },
     });
 
     return NextResponse.json({ invoice }, { status: 201 });

@@ -81,6 +81,8 @@ model Company {
 // password_hash + tokenVersion support email/password auth (PRD 9.1, 14) with
 // short-lived access tokens + rotating refresh tokens (tokenVersion bump revokes
 // all outstanding refresh tokens, e.g. on logout or password change).
+// hourlyRate: PRD 9.7 roster field, not in the original PRD 11 list — nullable
+// since it's only meaningful for billable roles, not every account.
 model User {
   id                     String    @id @default(uuid()) @db.Uuid
   companyId              String    @map("company_id") @db.Uuid
@@ -88,6 +90,7 @@ model User {
   passwordHash           String    @map("password_hash")
   role                   Role
   name                   String
+  hourlyRate             Decimal?  @map("hourly_rate") @db.Decimal(8, 2)
   tokenVersion           Int       @default(0) @map("token_version")
   // Login brute-force stopgap (see lib/auth/login-attempts.ts): failedLoginAttempts
   // counts failures since failedLoginWindowStart; both reset on a successful login.
@@ -96,14 +99,15 @@ model User {
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")
 
-  company        Company         @relation(fields: [companyId], references: [id])
-  assignedTasks  Task[]          @relation("TaskAssignee")
-  uploadedFiles  File[]          @relation("FileUploader")
-  notifications  Notification[]
-  auditLogs      AuditLog[]      @relation("AuditLogActor")
-  changeOrders   ChangeOrder[]   @relation("ChangeOrderCreator")
-  statusComments StatusComment[] @relation("StatusCommentAuthor")
-  clientProfile  Client?
+  company            Company             @relation(fields: [companyId], references: [id])
+  assignedTasks      Task[]              @relation("TaskAssignee")
+  uploadedFiles      File[]              @relation("FileUploader")
+  notifications      Notification[]
+  auditLogs          AuditLog[]          @relation("AuditLogActor")
+  changeOrders       ChangeOrder[]       @relation("ChangeOrderCreator")
+  statusComments     StatusComment[]     @relation("StatusCommentAuthor")
+  projectAssignments ProjectAssignment[]
+  clientProfile      Client?
 
   @@index([companyId])
   @@map("users")
@@ -145,17 +149,37 @@ model Project {
   createdAt  DateTime      @default(now()) @map("created_at")
   updatedAt  DateTime      @updatedAt @map("updated_at")
 
-  company        Company         @relation(fields: [companyId], references: [id])
-  client         Client          @relation(fields: [clientId], references: [id])
-  tasks          Task[]
-  files          File[]
-  estimates      Estimate[]
-  invoices       Invoice[]
-  statusComments StatusComment[]
+  company            Company             @relation(fields: [companyId], references: [id])
+  client             Client              @relation(fields: [clientId], references: [id])
+  tasks              Task[]
+  files              File[]
+  estimates          Estimate[]
+  invoices           Invoice[]
+  statusComments     StatusComment[]
+  projectAssignments ProjectAssignment[]
 
   @@index([companyId])
   @@index([clientId])
   @@map("projects")
+}
+
+// PRD 9.7: "who is assigned to what" — a lightweight roster/staffing join,
+// separate from Task.assigneeId (a specific task, not general project
+// staffing). Not in the original PRD 11 list; added now that the roster
+// explicitly needs it.
+model ProjectAssignment {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_assignments")
 }
 
 // PRD 11: belongs to Project; belongs to User (assignee)
