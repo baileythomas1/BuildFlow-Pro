@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -45,12 +45,12 @@ export default function Home() {
       <p className="text-slate/70">
         Role: <span className="font-medium text-slate">{user.role}</span>
       </p>
-      <button
-        onClick={() => logout()}
-        className="mt-2 rounded-md border border-slate/20 px-5 py-2 font-medium text-slate hover:border-slate/40"
+      <Link
+        href="/projects"
+        className="mt-2 rounded-md bg-orange px-5 py-2 font-medium text-white hover:opacity-90"
       >
-        Log out
-      </button>
+        Go to Projects
+      </Link>
     </main>
   );
 }
