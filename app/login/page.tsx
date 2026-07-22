@@ -3,8 +3,12 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Space_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 import { useAuth } from "@/components/AuthProvider";
-import { FormField } from "@/components/FormField";
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
+const ibmPlexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400"] });
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,29 +33,57 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-off-white px-4 py-16">
-      <div className="w-full max-w-sm rounded-lg border border-slate/10 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-navy">Log in</h1>
-        <p className="mt-1 text-sm text-slate/70">Welcome back to BuildFlow Pro.</p>
+    <main className="flex flex-1 items-center justify-center bg-[#F4F7FA] px-4 py-16">
+      <div className={`${inter.className} flex w-[380px] flex-col items-center gap-6 rounded-lg border border-[#DCE4EC] bg-white p-[41px]`}>
+        <h1 className={`${spaceGrotesk.className} text-center text-xl text-navy`}>BuildFlow Pro</h1>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <FormField label="Email" type="email" value={email} onChange={setEmail} required />
-          <FormField label="Password" type="password" value={password} onChange={setPassword} required />
+        <p className={`${ibmPlexMono.className} text-center text-[11px] uppercase tracking-[1.1px] text-[#5B6B7F]`}>
+          Log in to your account
+        </p>
+
+        <div className="flex w-full items-center gap-2.5 pt-[22px]">
+          <span className="h-px flex-1 bg-[#DCE4EC]" />
+          <span className="h-px flex-1 bg-[#DCE4EC]" />
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
+          <label className="flex flex-col gap-2 text-xs font-medium text-[#5B6B7F]">
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@company.com"
+              className="h-10 rounded border border-[#DCE4EC] px-[15px] text-sm font-normal text-slate outline-none placeholder:text-[#757575] focus:border-sky focus:ring-1 focus:ring-sky"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2 text-xs font-medium text-[#5B6B7F]">
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-10 rounded border border-[#DCE4EC] px-[15px] text-sm font-normal text-slate outline-none placeholder:text-[#757575] focus:border-sky focus:ring-1 focus:ring-sky"
+            />
+          </label>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 rounded-md bg-orange px-4 py-2 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+            className="flex h-10 w-full items-center justify-center rounded bg-orange text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Logging in..." : "Log in"}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-slate/70">
-          Need a company account?{" "}
-          <Link href="/signup" className="font-medium text-sky hover:underline">
+        <p className="text-center text-[13px] text-[#5B6B7F]">
+          {"Don't have an account? "}
+          <Link href="/signup" className="font-semibold text-navy hover:underline">
             Sign up
           </Link>
         </p>
