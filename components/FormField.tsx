@@ -1,3 +1,7 @@
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500"] });
+
 type FormFieldProps = {
   label: string;
   value: string;
@@ -5,11 +9,20 @@ type FormFieldProps = {
   type?: string;
   required?: boolean;
   minLength?: number;
+  placeholder?: string;
 };
 
-export function FormField({ label, value, onChange, type = "text", required, minLength }: FormFieldProps) {
+export function FormField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required,
+  minLength,
+  placeholder,
+}: FormFieldProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm font-medium text-slate">
+    <label className={`${inter.className} flex flex-col gap-2 text-xs font-medium text-[#5B6B7F]`}>
       {label}
       <input
         type={type}
@@ -17,7 +30,8 @@ export function FormField({ label, value, onChange, type = "text", required, min
         onChange={(e) => onChange(e.target.value)}
         required={required}
         minLength={minLength}
-        className="rounded-md border border-slate/20 px-3 py-2 text-base font-normal text-slate outline-none focus:border-sky focus:ring-1 focus:ring-sky"
+        placeholder={placeholder}
+        className="h-10 rounded border border-[#DCE4EC] bg-white px-[15px] text-sm font-normal text-slate outline-none placeholder:text-[#757575] focus:border-sky focus:ring-1 focus:ring-sky"
       />
     </label>
   );
