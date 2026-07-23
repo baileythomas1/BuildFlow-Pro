@@ -4,6 +4,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
 import { estimateStatusBadge } from "@/lib/estimates/badges";
+import { spaceGrotesk, ibmPlexMono, inter } from "@/lib/fonts";
 import type { EstimateDetail as EstimateDetailType } from "@/lib/estimates/types";
 
 function isEditable(status: string) {
@@ -22,7 +23,9 @@ function lineTotal(quantity: string, unitCost: string, markup: string) {
 // all three line up on the same column boundaries by construction, instead
 // of a <table> (auto-sized to its own rows) sitting above a separately
 // flex-sized input row that happened to drift out of alignment with it.
-const LINE_ITEM_GRID = "grid grid-cols-[minmax(0,1fr)_72px_104px_92px_112px_88px] gap-3 items-center";
+const LINE_ITEM_GRID = "grid grid-cols-[minmax(0,1fr)_70px_100px_100px_120px_88px] gap-4 items-center";
+
+const INPUT_CLASS = `${inter.className} h-8 w-full rounded border border-[#DCE4EC] bg-white px-3 text-[13px] text-[#1E293B] outline-none placeholder:text-[#5B6B7F] focus:border-sky`;
 
 export function EstimateDetail({
   estimateId,
@@ -191,60 +194,67 @@ export function EstimateDetail({
     unitCost && quantity ? money(lineTotal(quantity, unitCost, markup)) : "";
 
   return (
-    <div className="rounded-lg border border-slate/10 bg-white p-5">
-      <div className="flex items-center justify-between">
-        <button onClick={onClose} className="text-sm text-sky hover:underline">
-          &larr; Back to Estimates
-        </button>
-        <div className="flex items-center gap-2">
-          <Badge label={badge.label} tone={badge.tone} />
-          <button onClick={handleDownloadPdf} className="text-sm text-sky hover:underline">
-            Download PDF
-          </button>
-        </div>
-      </div>
+    <div className="mx-auto flex w-full max-w-[820px] flex-col items-start">
+      <button onClick={onClose} className={`${inter.className} text-[13px] text-sky hover:underline`}>
+        &larr; Back to Estimates
+      </button>
 
-      <div className="mt-3">
-        {editable ? (
-          <input
-            value={titleInput}
-            onChange={(e) => setTitleInput(e.target.value)}
-            onBlur={handleSaveTitle}
-            placeholder="Untitled Estimate"
-            className="-mx-1 w-full rounded-md px-1 text-xl font-semibold text-navy outline-none placeholder:text-slate/30 focus:ring-1 focus:ring-sky"
-          />
-        ) : (
-          <h2 className="text-xl font-semibold text-navy">{estimate.title || "Untitled Estimate"}</h2>
-        )}
+      <div className="mt-[17px] flex w-full items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {editable ? (
+            <input
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              onBlur={handleSaveTitle}
+              placeholder="Untitled Estimate"
+              className={`${spaceGrotesk.className} -mx-1 rounded px-1 text-[28px] text-navy outline-none placeholder:text-navy/30 focus:ring-1 focus:ring-sky`}
+            />
+          ) : (
+            <h2 className={`${spaceGrotesk.className} text-[28px] text-navy`}>
+              {estimate.title || "Untitled Estimate"}
+            </h2>
+          )}
+          <Badge label={badge.label} tone={badge.tone} />
+        </div>
+        <button
+          onClick={handleDownloadPdf}
+          className={`${inter.className} shrink-0 text-[13px] text-sky hover:underline`}
+        >
+          Download PDF
+        </button>
       </div>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {estimate.archivedAt && (
-        <p className="mt-3 rounded-md bg-slate/5 px-3 py-2 text-sm text-slate/70">Archived</p>
+        <p className={`${inter.className} mt-3 rounded-md bg-[#F4F7FA] px-3 py-2 text-sm text-[#5B6B7F]`}>
+          Archived
+        </p>
       )}
 
-      <div className="mt-4">
-        <div className={`${LINE_ITEM_GRID} border-b border-slate/10 pb-2 text-sm text-slate/60`}>
-          <span className="font-medium">Description</span>
-          <span className="font-medium">Qty</span>
-          <span className="font-medium">Unit Cost</span>
-          <span className="font-medium">Markup %</span>
-          <span className="font-medium">Line Total</span>
+      <div className="mt-[17px] w-full rounded-md border border-[#DCE4EC] bg-white px-6 py-8">
+        <div className={`${LINE_ITEM_GRID} ${inter.className} border-b border-[#DCE4EC] pb-3 text-[13px] font-medium text-[#5B6B7F]`}>
+          <span>Description</span>
+          <span>Qty</span>
+          <span>Unit Cost</span>
+          <span>Markup %</span>
+          <span>Line Total</span>
           <span />
         </div>
 
         {estimate.lineItems.map((item) => (
-          <div key={item.id} className={`${LINE_ITEM_GRID} border-b border-slate/5 py-2 text-sm`}>
-            <span className="text-slate">{item.description}</span>
-            <span className="text-slate">{item.quantity}</span>
-            <span className="text-slate">{money(item.unitCost)}</span>
-            <span className="text-slate">{item.markup}%</span>
-            <span className="text-slate">{money(lineTotal(item.quantity, item.unitCost, item.markup))}</span>
+          <div key={item.id} className={`${LINE_ITEM_GRID} border-b border-[#DCE4EC] py-3`}>
+            <span className={`${inter.className} text-sm text-[#1E293B]`}>{item.description}</span>
+            <span className={`${ibmPlexMono.className} text-[13px] text-[#1E293B]`}>{item.quantity}</span>
+            <span className={`${ibmPlexMono.className} text-[13px] text-[#1E293B]`}>{money(item.unitCost)}</span>
+            <span className={`${ibmPlexMono.className} text-[13px] text-[#1E293B]`}>{item.markup}%</span>
+            <span className={`${ibmPlexMono.className} text-[13px] text-[#1E293B]`}>
+              {money(lineTotal(item.quantity, item.unitCost, item.markup))}
+            </span>
             {editable ? (
               <button
                 onClick={() => handleDeleteLineItem(item.id)}
                 disabled={busy}
-                className="justify-self-end text-red-600 hover:underline disabled:opacity-50"
+                className={`${inter.className} justify-self-end text-[13px] text-[#B54A3A] hover:underline disabled:opacity-50`}
               >
                 Remove
               </button>
@@ -253,70 +263,73 @@ export function EstimateDetail({
             )}
           </div>
         ))}
+
+        <p className={`${inter.className} pt-4 text-right text-base text-navy`}>
+          Total:{" "}
+          <span className={`${ibmPlexMono.className} font-medium`}>{money(estimate.total)}</span>
+        </p>
+
+        {editable && (
+          <form onSubmit={handleAddLineItem} className={`${LINE_ITEM_GRID} mt-4 border-t border-[#DCE4EC] pt-4`}>
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description"
+              required
+              className={INPUT_CLASS}
+            />
+            <input
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Qty"
+              type="number"
+              step="0.01"
+              required
+              className={INPUT_CLASS}
+            />
+            <input
+              value={unitCost}
+              onChange={(e) => setUnitCost(e.target.value)}
+              placeholder="Unit cost"
+              type="number"
+              step="0.01"
+              required
+              className={INPUT_CLASS}
+            />
+            <input
+              value={markup}
+              onChange={(e) => setMarkup(e.target.value)}
+              placeholder="Markup %"
+              type="number"
+              step="0.01"
+              required
+              className={INPUT_CLASS}
+            />
+            <span className={`${ibmPlexMono.className} text-[13px] text-[#5B6B7F]`}>{previewTotal}</span>
+            <button
+              type="submit"
+              disabled={busy}
+              className={`${inter.className} flex h-8 items-center justify-center rounded bg-orange text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50`}
+            >
+              Add
+            </button>
+          </form>
+        )}
       </div>
 
-      <p className="mt-3 text-right text-base font-semibold text-navy">Total: {money(estimate.total)}</p>
-
-      {editable && (
-        <form onSubmit={handleAddLineItem} className={`${LINE_ITEM_GRID} mt-4 border-t border-slate/10 pt-4`}>
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description"
-            required
-            className="w-full rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
-          />
-          <input
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Qty"
-            type="number"
-            step="0.01"
-            required
-            className="w-full rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
-          />
-          <input
-            value={unitCost}
-            onChange={(e) => setUnitCost(e.target.value)}
-            placeholder="Unit cost"
-            type="number"
-            step="0.01"
-            required
-            className="w-full rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
-          />
-          <input
-            value={markup}
-            onChange={(e) => setMarkup(e.target.value)}
-            placeholder="Markup %"
-            type="number"
-            step="0.01"
-            required
-            className="w-full rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
-          />
-          <span className="text-sm text-slate/50">{previewTotal}</span>
-          <button
-            type="submit"
-            disabled={busy}
-            className="justify-self-end rounded-md bg-orange px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-          >
-            Add
-          </button>
-        </form>
-      )}
-
       {!estimate.archivedAt && (estimate.status === "DRAFT" || estimate.status === "SENT") && (
-        <div className="mt-4 flex gap-3 border-t border-slate/10 pt-4">
+        <div className="mt-[17px] flex items-center gap-2.5">
           <button
             onClick={handleToggleSend}
             disabled={busy}
-            className="rounded-md bg-orange px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className={`${inter.className} flex h-[35px] items-center justify-center rounded bg-orange px-4 text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50`}
           >
             {estimate.status === "DRAFT" ? "Send to Client" : "Move Back to Draft"}
           </button>
           <button
             onClick={handleArchive}
             disabled={busy}
-            className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:border-red-400 disabled:opacity-50"
+            className={`${inter.className} flex h-[35px] items-center justify-center rounded border border-[#B54A3A] bg-white px-4 text-[13px] font-bold text-[#B54A3A] hover:bg-[#B54A3A]/5 disabled:opacity-50`}
           >
             Archive
           </button>
@@ -324,26 +337,26 @@ export function EstimateDetail({
       )}
 
       {estimate.status === "APPROVED" && (
-        <div className="mt-6 border-t border-slate/10 pt-4">
-          <h3 className="text-sm font-semibold text-navy">Change Orders</h3>
-          <p className="mt-1 text-xs text-slate/60">
+        <div className="mt-6 w-full border-t border-[#DCE4EC] pt-4">
+          <h3 className={`${spaceGrotesk.className} text-base text-navy`}>Change Orders</h3>
+          <p className={`${inter.className} mt-1 text-xs text-[#5B6B7F]`}>
             This estimate is locked. Any change is recorded here as a new, immutable Change Order.
           </p>
 
           {estimate.changeOrders.length === 0 && (
-            <p className="mt-3 text-sm text-slate/60">No change orders yet.</p>
+            <p className={`${inter.className} mt-3 text-sm text-[#5B6B7F]`}>No change orders yet.</p>
           )}
 
           {estimate.changeOrders.map((co) => (
-            <div key={co.id} className="mt-3 rounded-md border border-slate/10 p-3 text-sm">
+            <div key={co.id} className="mt-3 rounded-md border border-[#DCE4EC] p-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-slate">{co.description}</span>
-                <span className="font-semibold text-navy">{money(co.total)}</span>
+                <span className={`${inter.className} font-medium text-[#1E293B]`}>{co.description}</span>
+                <span className={`${ibmPlexMono.className} font-medium text-navy`}>{money(co.total)}</span>
               </div>
-              <p className="mt-1 text-xs text-slate/50">
+              <p className={`${inter.className} mt-1 text-xs text-[#5B6B7F]`}>
                 By {co.createdBy.name} on {new Date(co.createdAt).toLocaleDateString()}
               </p>
-              <ul className="mt-2 space-y-1 text-xs text-slate/70">
+              <ul className={`${inter.className} mt-2 space-y-1 text-xs text-[#5B6B7F]`}>
                 {co.lineItems.map((li) => (
                   <li key={li.id}>
                     {li.description} — {li.quantity} &times; {money(li.unitCost)} (+{li.markup}%) ={" "}
@@ -354,14 +367,14 @@ export function EstimateDetail({
             </div>
           ))}
 
-          <form onSubmit={handleCreateChangeOrder} className="mt-4 rounded-md border border-slate/10 p-3">
-            <p className="text-xs font-medium text-slate/60">New change order</p>
+          <form onSubmit={handleCreateChangeOrder} className="mt-4 rounded-md border border-[#DCE4EC] p-3">
+            <p className={`${inter.className} text-xs font-medium text-[#5B6B7F]`}>New change order</p>
             <input
               value={coDescription}
               onChange={(e) => setCoDescription(e.target.value)}
               placeholder="Reason for the change"
               required
-              className="mt-2 w-full rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
+              className={`${INPUT_CLASS} mt-2`}
             />
             {coLineItems.map((item, index) => (
               <div key={index} className="mt-2 flex flex-wrap gap-2">
@@ -370,7 +383,7 @@ export function EstimateDetail({
                   onChange={(e) => updateCoLineItem(index, "description", e.target.value)}
                   placeholder="Description"
                   required
-                  className="min-w-[140px] flex-1 rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
+                  className={`${INPUT_CLASS} min-w-[140px] flex-1`}
                 />
                 <input
                   value={item.quantity}
@@ -378,7 +391,7 @@ export function EstimateDetail({
                   type="number"
                   step="0.01"
                   required
-                  className="w-16 rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
+                  className={`${INPUT_CLASS} w-16`}
                 />
                 <input
                   value={item.unitCost}
@@ -387,7 +400,7 @@ export function EstimateDetail({
                   type="number"
                   step="0.01"
                   required
-                  className="w-24 rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
+                  className={`${INPUT_CLASS} w-24`}
                 />
                 <input
                   value={item.markup}
@@ -396,7 +409,7 @@ export function EstimateDetail({
                   type="number"
                   step="0.01"
                   required
-                  className="w-20 rounded-md border border-slate/20 px-2 py-1.5 text-sm outline-none focus:border-sky"
+                  className={`${INPUT_CLASS} w-20`}
                 />
               </div>
             ))}
@@ -406,7 +419,7 @@ export function EstimateDetail({
                 onClick={() =>
                   setCoLineItems((prev) => [...prev, { description: "", quantity: "1", unitCost: "", markup: "0" }])
                 }
-                className="text-xs text-sky hover:underline"
+                className={`${inter.className} text-xs text-sky hover:underline`}
               >
                 + Add another line
               </button>
@@ -414,7 +427,7 @@ export function EstimateDetail({
             <button
               type="submit"
               disabled={busy}
-              className="mt-3 rounded-md bg-orange px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+              className={`${inter.className} mt-3 flex h-8 items-center justify-center rounded bg-orange px-4 text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50`}
             >
               Create Change Order
             </button>
