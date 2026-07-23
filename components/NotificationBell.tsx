@@ -15,7 +15,7 @@ function formatDateTime(value: string) {
   });
 }
 
-export function NotificationBell() {
+export function NotificationBell({ variant = "light" }: { variant?: "light" | "dark" }) {
   const { accessToken } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -64,7 +64,9 @@ export function NotificationBell() {
       <button
         onClick={handleOpen}
         aria-label="Notifications"
-        className="relative rounded-md p-1.5 text-slate/60 hover:text-slate"
+        className={`relative rounded-md p-1.5 ${
+          variant === "dark" ? "text-white/70 hover:text-white" : "text-slate/60 hover:text-slate"
+        }`}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
