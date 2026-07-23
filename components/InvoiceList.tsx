@@ -4,7 +4,9 @@ import { useEffect, useState, FormEvent } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
 import { FormField } from "@/components/FormField";
+import { SectionDivider } from "@/components/SectionDivider";
 import { invoiceStatusBadge } from "@/lib/invoices/badges";
+import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { Invoice } from "@/lib/invoices/types";
 
 function money(value: string) {
@@ -67,23 +69,18 @@ export function InvoiceList({ projectId, accessToken }: { projectId: string; acc
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="ml-auto">
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="rounded-md bg-orange px-4 py-1.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            {showForm ? "Cancel" : "New Invoice"}
-          </button>
-        </div>
-      </div>
+    <div className="flex w-full flex-col items-start gap-4">
+      <SectionDivider
+        label="Invoices"
+        className="pt-7"
+        action={{ label: showForm ? "Cancel" : "New Invoice", onClick: () => setShowForm((v) => !v) }}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="mt-3 flex flex-wrap items-end gap-3 rounded-md border border-slate/10 bg-white p-3"
+          className="flex w-full flex-wrap items-end gap-3 rounded-md border border-[#DCE4EC] bg-white p-3"
         >
           <div className="min-w-[180px] flex-1">
             <FormField label="Description" value={description} onChange={setDescription} required />
@@ -97,47 +94,59 @@ export function InvoiceList({ projectId, accessToken }: { projectId: string; acc
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-md bg-orange px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className="flex h-10 items-center justify-center rounded bg-orange px-4 text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Creating..." : "Create"}
           </button>
         </form>
       )}
 
-      {invoices === null && <p className="mt-3 text-slate/60">Loading invoices...</p>}
-      {invoices !== null && invoices.length === 0 && <p className="mt-3 text-slate/60">No invoices yet.</p>}
+      {invoices === null && <p className="text-slate/60">Loading invoices...</p>}
+      {invoices !== null && invoices.length === 0 && <p className="text-slate/60">No invoices yet.</p>}
 
       {invoices !== null && invoices.length > 0 && (
-        <div className="mt-3 overflow-x-auto rounded-lg border border-slate/10 bg-white">
-          <table className="w-full text-left text-sm">
+        <div className="w-full overflow-x-auto rounded-md border border-[#DCE4EC] bg-white">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate/10 text-slate/60">
-                <th className="px-4 py-2 font-medium">Description</th>
-                <th className="px-4 py-2 font-medium">Amount</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Due</th>
-                <th className="px-4 py-2 font-medium"></th>
+              <tr className="border-b border-[#DCE4EC]">
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Description
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Amount
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Status
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Due
+                </th>
+                <th className="px-5 pb-[13px] pt-3"></th>
               </tr>
             </thead>
             <tbody>
               {invoices.map((invoice) => {
                 const badge = invoiceStatusBadge(invoice.status);
                 return (
-                  <tr key={invoice.id} className="border-b border-slate/5 last:border-0">
-                    <td className="px-4 py-2 text-slate">{invoice.description}</td>
-                    <td className="px-4 py-2 text-slate">{money(invoice.amount)}</td>
-                    <td className="px-4 py-2">
+                  <tr key={invoice.id} className="border-b border-[#DCE4EC] last:border-0">
+                    <td className={`${inter.className} px-5 py-[17px] text-[13px] text-[#1E293B]`}>
+                      {invoice.description}
+                    </td>
+                    <td className={`${ibmPlexMono.className} px-5 py-[16.5px] text-[13px] text-[#1E293B]`}>
+                      {money(invoice.amount)}
+                    </td>
+                    <td className="px-5 py-3.5">
                       <Badge label={badge.label} tone={badge.tone} />
                     </td>
-                    <td className="px-4 py-2 text-slate/70">
+                    <td className={`${ibmPlexMono.className} px-5 py-[16.5px] text-[13px] text-[#1E293B]`}>
                       {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-5 py-[17px] text-right">
                       {invoice.status !== "PAID" && (
                         <button
                           onClick={() => handlePay(invoice.id)}
                           disabled={payingId === invoice.id}
-                          className="text-sky hover:underline disabled:opacity-50"
+                          className={`${inter.className} text-[12px] font-semibold text-sky hover:underline disabled:opacity-50`}
                         >
                           {payingId === invoice.id ? "Opening..." : "Pay via Stripe"}
                         </button>

@@ -2,6 +2,7 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { Task } from "@/lib/tasks/types";
 
 function isOverdue(task: Task) {
@@ -32,15 +33,15 @@ export function TaskCard({
       style={style}
       {...(draggable ? { ...attributes, ...listeners } : {})}
       onClick={onClick}
-      className={`rounded-md border border-slate/10 bg-white p-3 text-sm shadow-sm ${
+      className={`flex w-full flex-col gap-2 rounded-[5px] border border-[#DCE4EC] bg-white p-[13px] ${
         draggable ? "cursor-grab active:cursor-grabbing" : ""
-      } ${onClick ? "cursor-pointer hover:border-slate/30" : ""} ${isDragging ? "opacity-50" : ""}`}
+      } ${onClick ? "cursor-pointer hover:border-[#5B6B7F]/40" : ""} ${isDragging ? "opacity-50" : ""}`}
     >
-      <p className="font-medium text-slate">{task.title}</p>
-      <div className="mt-2 flex items-center justify-between text-xs text-slate/60">
-        <span>{task.assignee?.name ?? "Unassigned"}</span>
+      <p className={`${inter.className} text-[13px] font-medium text-[#1E293B]`}>{task.title}</p>
+      <div className={`${ibmPlexMono.className} flex items-center justify-between text-[11px]`}>
+        <span className="text-[#5B6B7F]">{task.assignee?.name ?? "Unassigned"}</span>
         {task.dueDate && (
-          <span className={isOverdue(task) ? "font-medium text-red-600" : ""}>
+          <span className={isOverdue(task) ? "text-[#B54A3A]" : "text-[#5B6B7F]"}>
             {new Date(task.dueDate).toLocaleDateString()}
           </span>
         )}

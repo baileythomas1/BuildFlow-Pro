@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState, FormEvent, use } from "react";
+import { useEffect, useState, FormEvent, ReactNode, use } from "react";
 import Link from "next/link";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { FormField } from "@/components/FormField";
-import { Badge } from "@/components/Badge";
+import { ProjectCard } from "@/components/ProjectCard";
+import { SectionDivider } from "@/components/SectionDivider";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { FileList } from "@/components/FileList";
 import { EstimateList } from "@/components/EstimateList";
 import { InvoiceList } from "@/components/InvoiceList";
 import { StatusCommentThread } from "@/components/StatusCommentThread";
 import { healthBadge, statusBadge } from "@/lib/projects/badges";
+import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { Project, ProjectStatusValue } from "@/lib/projects/types";
 
 const CAN_MANAGE_ROLES = ["OWNER", "ADMIN", "PM"];
@@ -30,6 +32,15 @@ function toDateInputValue(value: string | null) {
 function formatDate(value: string | null) {
   if (!value) return "—";
   return new Date(value).toLocaleDateString();
+}
+
+function InfoField({ label, value, mono }: { label: string; value: ReactNode; mono?: boolean }) {
+  return (
+    <div className="flex flex-1 flex-col items-start gap-1">
+      <p className={`${inter.className} text-[12px] text-[#5B6B7F]`}>{label}</p>
+      <div className={`${mono ? ibmPlexMono.className : inter.className} text-sm text-[#1E293B]`}>{value}</div>
+    </div>
+  );
 }
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -79,7 +90,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   if (authLoading || !user) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-off-white">
+      <main className="flex flex-1 items-center justify-center bg-[#F4F7FA]">
         <p className="text-slate/60">Loading...</p>
       </main>
     );
@@ -89,7 +100,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   if (loadError) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-3 bg-off-white px-4 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center gap-3 bg-[#F4F7FA] px-4 text-center">
         <p className="text-slate/70">{loadError}</p>
         <Link href="/projects" className="text-sky hover:underline">
           Back to Projects
@@ -100,7 +111,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   if (!project) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-off-white">
+      <main className="flex flex-1 items-center justify-center bg-[#F4F7FA]">
         <p className="text-slate/60">Loading project...</p>
       </main>
     );
@@ -153,77 +164,64 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const statusInfo = statusBadge(project.status);
 
   return (
-    <main className="flex-1 bg-off-white px-6 py-8">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/projects" className="text-sm text-sky hover:underline">
+    <main className="flex-1 bg-[#F4F7FA]">
+      <div className="mx-auto flex max-w-[1100px] flex-col items-start gap-4 px-8 pb-24 pt-[35px]">
+        <Link href="/projects" className="text-[13px] text-sky hover:underline">
           &larr; Back to Projects
         </Link>
 
-        <div className="mt-4 max-w-2xl rounded-lg border border-slate/10 bg-white p-8 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-navy">{project.name}</h1>
-              <p className="mt-1 text-slate/70">{project.address}</p>
-            </div>
-            <div className="flex flex-shrink-0 gap-2">
-              <Badge label={statusInfo.label} tone={statusInfo.tone} />
-              <Badge label={health.label} tone={health.tone} />
-            </div>
-          </div>
-
+        <ProjectCard
+          name={project.name}
+          address={project.address}
+          badges={[statusInfo, health]}
+        >
           {project.archivedAt && (
-            <p className="mt-4 rounded-md bg-slate/5 px-3 py-2 text-sm text-slate/70">
+            <p className="rounded-md bg-slate/5 px-3 py-2 text-sm text-slate/70">
               Archived on {formatDate(project.archivedAt)}
             </p>
           )}
 
           {!editing ? (
             <>
-              <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <dt className="text-slate/50">Client</dt>
-                  <dd className="text-slate">
-                    {project.client.name} ({project.client.email})
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate/50">Budget</dt>
-                  <dd className="text-slate">${Number(project.budget).toLocaleString()}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate/50">Start date</dt>
-                  <dd className="text-slate">{formatDate(project.startDate)}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate/50">Target completion</dt>
-                  <dd className="text-slate">{formatDate(project.targetDate)}</dd>
-                </div>
-              </dl>
+              <div className="flex w-full items-start gap-5">
+                <InfoField
+                  label="Client"
+                  value={
+                    <>
+                      <p className="leading-normal">{project.client.name}</p>
+                      <p className="leading-normal">({project.client.email})</p>
+                    </>
+                  }
+                />
+                <InfoField label="Budget" mono value={`$${Number(project.budget).toLocaleString()}`} />
+                <InfoField label="Start date" mono value={formatDate(project.startDate)} />
+                <InfoField label="Target Completion" mono value={formatDate(project.targetDate)} />
+              </div>
 
               {canManage && !project.archivedAt && (
-                <div className="mt-6 flex gap-3">
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => {
                       loadForEditing(project);
                       setEditing(true);
                     }}
-                    className="rounded-md border border-slate/20 px-4 py-2 text-sm font-medium text-slate hover:border-slate/40"
+                    className="flex h-[35px] items-center justify-center rounded border border-navy bg-white px-4 text-sm font-bold text-navy hover:bg-navy/5"
                   >
                     Edit
                   </button>
                   <button
                     onClick={handleArchive}
                     disabled={submitting}
-                    className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:border-red-400 disabled:opacity-50"
+                    className="flex h-[35px] items-center justify-center rounded border border-[#B54A3A] bg-white px-4 text-sm font-bold text-[#B54A3A] hover:bg-[#B54A3A]/5 disabled:opacity-50"
                   >
                     Archive
                   </button>
                 </div>
               )}
-              {formError && <p className="mt-3 text-sm text-red-600">{formError}</p>}
+              {formError && <p className="text-sm text-red-600">{formError}</p>}
             </>
           ) : (
-            <form onSubmit={handleSave} className="mt-6 flex flex-col gap-4">
+            <form onSubmit={handleSave} className="flex w-full flex-col gap-4">
               <FormField label="Project name" value={name} onChange={setName} required />
               <FormField label="Address" value={address} onChange={setAddress} required />
               <FormField label="Budget" type="number" value={budget} onChange={setBudget} required />
@@ -263,25 +261,25 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-md bg-orange px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                  className="flex h-[35px] items-center justify-center rounded bg-orange px-4 text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50"
                 >
                   {submitting ? "Saving..." : "Save changes"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
-                  className="rounded-md border border-slate/20 px-4 py-2 text-sm font-medium text-slate hover:border-slate/40"
+                  className="flex h-[35px] items-center justify-center rounded border border-navy bg-white px-4 text-[13px] font-bold text-navy hover:bg-navy/5"
                 >
                   Cancel
                 </button>
               </div>
             </form>
           )}
-        </div>
+        </ProjectCard>
 
         {!project.archivedAt && (
-          <div className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-navy">Tasks</h2>
+          <>
+            <SectionDivider label="Tasks" className="pt-7" />
             <KanbanBoard
               projectId={project.id}
               accessToken={accessToken}
@@ -289,34 +287,24 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               canManage={canManage}
               onTasksChanged={refreshProjectHealth}
             />
-          </div>
+          </>
         )}
 
         {!project.archivedAt && (
-          <div className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-navy">Files</h2>
+          <>
+            <SectionDivider label="Files" className="pt-7" />
             <FileList projectId={project.id} accessToken={accessToken} />
-          </div>
+          </>
         )}
 
         {/* Estimates/Invoices aren't in the Employee nav per PRD 8 IA; the
             Client role sees a sanitized view of them through /portal instead. */}
-        {!project.archivedAt && canManage && (
-          <div className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-navy">Estimates</h2>
-            <EstimateList projectId={project.id} accessToken={accessToken} />
-          </div>
-        )}
+        {!project.archivedAt && canManage && <EstimateList projectId={project.id} accessToken={accessToken} />}
+
+        {!project.archivedAt && canManage && <InvoiceList projectId={project.id} accessToken={accessToken} />}
 
         {!project.archivedAt && canManage && (
-          <div className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold text-navy">Invoices</h2>
-            <InvoiceList projectId={project.id} accessToken={accessToken} />
-          </div>
-        )}
-
-        {!project.archivedAt && canManage && (
-          <div className="mt-8">
+          <div className="w-full pt-7">
             <h2 className="mb-3 text-lg font-semibold text-navy">Client Updates</h2>
             <p className="mb-3 text-xs text-slate/50">
               Posted here, read-only in the homeowner portal — one-way, not a live chat.

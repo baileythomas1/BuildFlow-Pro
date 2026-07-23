@@ -6,6 +6,7 @@ import { useRequireAuth } from "@/lib/use-require-auth";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
 import { StatCard } from "@/components/StatCard";
+import { SectionDivider } from "@/components/SectionDivider";
 import { healthBadge } from "@/lib/projects/badges";
 import type { DashboardData } from "@/lib/dashboard/types";
 import type { Project } from "@/lib/projects/types";
@@ -37,17 +38,6 @@ function greeting() {
   return "Good evening";
 }
 
-function SectionDivider({ label }: { label: string }) {
-  return (
-    <div className="flex w-full items-center gap-3">
-      <span className="h-px flex-1 bg-[#DCE4EC]" />
-      <span className={`${ibmPlexMono.className} text-[11px] uppercase tracking-[1.1px] text-[#5B6B7F]`}>
-        {label}
-      </span>
-      <span className="h-px flex-1 bg-[#DCE4EC]" />
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const { user, loading: authLoading, accessToken } = useRequireAuth();

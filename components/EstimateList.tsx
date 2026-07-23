@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
 import { EstimateDetail } from "@/components/EstimateDetail";
+import { SectionDivider } from "@/components/SectionDivider";
 import { estimateStatusBadge } from "@/lib/estimates/badges";
+import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { EstimateDetail as EstimateDetailType, EstimateSummary } from "@/lib/estimates/types";
 
 export function EstimateList({ projectId, accessToken }: { projectId: string; accessToken: string | null }) {
@@ -57,58 +59,60 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="ml-auto">
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="rounded-md bg-orange px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-          >
-            {creating ? "Creating..." : "New Estimate"}
-          </button>
-        </div>
-      </div>
+    <div className="flex w-full flex-col items-start gap-4">
+      <SectionDivider
+        label="Estimates"
+        className="pt-7"
+        action={{ label: creating ? "Creating..." : "New Estimate", onClick: handleCreate, disabled: creating }}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {estimates === null && <p className="mt-3 text-slate/60">Loading estimates...</p>}
-      {estimates !== null && estimates.length === 0 && (
-        <p className="mt-3 text-slate/60">No estimates yet.</p>
-      )}
+      {estimates === null && <p className="text-slate/60">Loading estimates...</p>}
+      {estimates !== null && estimates.length === 0 && <p className="text-slate/60">No estimates yet.</p>}
 
       {estimates !== null && estimates.length > 0 && (
-        <div className="mt-3 overflow-x-auto rounded-lg border border-slate/10 bg-white">
-          <table className="w-full text-left text-sm">
+        <div className="w-full overflow-x-auto rounded-md border border-[#DCE4EC] bg-white">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate/10 text-slate/60">
-                <th className="px-4 py-2 font-medium">Title</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Total</th>
-                <th className="px-4 py-2 font-medium">Created</th>
-                <th className="px-4 py-2 font-medium"></th>
+              <tr className="border-b border-[#DCE4EC]">
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Title
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Status
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Total
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Created
+                </th>
+                <th className="px-5 pb-[13px] pt-3"></th>
               </tr>
             </thead>
             <tbody>
               {estimates.map((estimate) => {
                 const badge = estimateStatusBadge(estimate.status);
                 return (
-                  <tr key={estimate.id} className="border-b border-slate/5 last:border-0">
-                    <td className="px-4 py-2 text-slate">
-                      {estimate.title ?? <span className="italic text-slate/40">Untitled Estimate</span>}
+                  <tr key={estimate.id} className="border-b border-[#DCE4EC] last:border-0">
+                    <td className={`${inter.className} px-5 py-[17px] text-[13px] text-[#1E293B]`}>
+                      {estimate.title ?? (
+                        <span className={`${inter.className} italic text-[#5B6B7F]`}>Untitled Estimate</span>
+                      )}
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-5 py-3.5">
                       <Badge label={badge.label} tone={badge.tone} />
                     </td>
-                    <td className="px-4 py-2 text-slate">
+                    <td className={`${ibmPlexMono.className} px-5 py-[16.5px] text-[13px] text-[#1E293B]`}>
                       ${Number(estimate.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-2 text-slate/70">
+                    <td className={`${ibmPlexMono.className} px-5 py-[16.5px] text-[13px] text-[#1E293B]`}>
                       {new Date(estimate.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-5 py-[17px] text-right">
                       <button
                         onClick={() => setSelectedId(estimate.id)}
-                        className="text-sky hover:underline"
+                        className={`${inter.className} text-[12px] font-semibold text-sky hover:underline`}
                       >
                         View
                       </button>

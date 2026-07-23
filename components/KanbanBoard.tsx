@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api-client";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { TaskEditModal } from "@/components/TaskEditModal";
 import { applyOptimisticMove } from "@/lib/tasks/client-reorder";
+import { inter } from "@/lib/fonts";
 import type { GroupedTasks, Task, TaskAssignee, TaskStatusValue } from "@/lib/tasks/types";
 
 const COLUMNS: TaskStatusValue[] = ["TODO", "IN_PROGRESS", "DONE"];
@@ -129,30 +130,31 @@ export function KanbanBoard({
   }
 
   return (
-    <div>
+    <div className="w-full">
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="grid w-full grid-cols-3 items-start gap-4">
           {COLUMNS.map((status) => (
-            <div key={status} className="flex flex-col gap-2">
-              <KanbanColumn
-                status={status}
-                tasks={grouped[status]}
-                canDrag={canDrag}
-                onTaskClick={canManage ? (task) => setEditingTask(task) : undefined}
-              />
-              {canManage && (
-                <form onSubmit={(e) => handleQuickAdd(status, e)} className="px-2">
-                  <input
-                    value={newTitles[status]}
-                    onChange={(e) => setNewTitles((prev) => ({ ...prev, [status]: e.target.value }))}
-                    placeholder="+ Add task"
-                    className="w-72 rounded-md border border-slate/10 bg-white px-2 py-1.5 text-sm text-slate outline-none focus:border-sky"
-                  />
-                </form>
-              )}
-            </div>
+            <KanbanColumn
+              key={status}
+              status={status}
+              tasks={grouped[status]}
+              canDrag={canDrag}
+              onTaskClick={canManage ? (task) => setEditingTask(task) : undefined}
+              quickAdd={
+                canManage && (
+                  <form onSubmit={(e) => handleQuickAdd(status, e)} className="w-full">
+                    <input
+                      value={newTitles[status]}
+                      onChange={(e) => setNewTitles((prev) => ({ ...prev, [status]: e.target.value }))}
+                      placeholder="+ Add task"
+                      className={`${inter.className} w-full rounded-[5px] border border-dashed border-[#DCE4EC] bg-transparent px-3 py-[11px] text-center text-[12px] text-[#5B6B7F] outline-none placeholder:text-[#5B6B7F] focus:border-sky`}
+                    />
+                  </form>
+                )
+              }
+            />
           ))}
         </div>
       </DndContext>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
+import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { FileVisibilityValue, ProjectFile } from "@/lib/files/types";
 
 const VISIBILITY_LABEL: Record<FileVisibilityValue, { label: string; tone: "slate" | "sky" }> = {
@@ -81,15 +82,15 @@ export function FileList({ projectId, accessToken }: { projectId: string; access
   }
 
   return (
-    <div>
+    <div className="w-full">
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
       <form
         onSubmit={handleUpload}
-        className="mb-4 flex flex-wrap items-end gap-3 rounded-md border border-slate/10 bg-white p-3"
+        className="mb-4 flex flex-wrap items-end gap-3 rounded-md border border-[#DCE4EC] bg-white p-3"
       >
         <div className="flex flex-col gap-1">
-          <label htmlFor="file-upload-input" className="text-xs font-medium text-slate/60">
+          <label htmlFor="file-upload-input" className={`${inter.className} text-xs font-medium text-[#5B6B7F]`}>
             File
           </label>
           <input
@@ -100,12 +101,12 @@ export function FileList({ projectId, accessToken }: { projectId: string; access
             className="text-sm"
           />
         </div>
-        <label className="flex flex-col gap-1 text-xs font-medium text-slate/60">
+        <label className={`${inter.className} flex flex-col gap-1 text-xs font-medium text-[#5B6B7F]`}>
           Type
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="rounded-md border border-slate/20 px-2 py-1.5 text-sm text-slate outline-none focus:border-sky"
+            className="rounded border border-[#DCE4EC] px-2 py-1.5 text-sm text-slate outline-none focus:border-sky"
           >
             {TYPE_OPTIONS.map((t) => (
               <option key={t} value={t}>
@@ -114,12 +115,12 @@ export function FileList({ projectId, accessToken }: { projectId: string; access
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-slate/60">
+        <label className={`${inter.className} flex flex-col gap-1 text-xs font-medium text-[#5B6B7F]`}>
           Visibility
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as FileVisibilityValue)}
-            className="rounded-md border border-slate/20 px-2 py-1.5 text-sm text-slate outline-none focus:border-sky"
+            className="rounded border border-[#DCE4EC] px-2 py-1.5 text-sm text-slate outline-none focus:border-sky"
           >
             <option value="INTERNAL">Internal</option>
             <option value="CLIENT">Client-visible</option>
@@ -128,7 +129,7 @@ export function FileList({ projectId, accessToken }: { projectId: string; access
         <button
           type="submit"
           disabled={!selectedFile || uploading}
-          className="rounded-md bg-orange px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+          className="flex h-[35px] items-center justify-center rounded bg-orange px-4 text-[13px] font-bold text-white hover:opacity-90 disabled:opacity-50"
         >
           {uploading ? "Uploading..." : "Upload"}
         </button>
@@ -138,33 +139,45 @@ export function FileList({ projectId, accessToken }: { projectId: string; access
       {files !== null && files.length === 0 && <p className="text-slate/60">No files yet.</p>}
 
       {files !== null && files.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-slate/10 bg-white">
-          <table className="w-full text-left text-sm">
+        <div className="w-full overflow-x-auto rounded-md border border-[#DCE4EC] bg-white">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate/10 text-slate/60">
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-4 py-2 font-medium">Uploader</th>
-                <th className="px-4 py-2 font-medium">Date</th>
-                <th className="px-4 py-2 font-medium">Visibility</th>
-                <th className="px-4 py-2 font-medium"></th>
+              <tr className="border-b border-[#DCE4EC]">
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Type
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Uploader
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Date
+                </th>
+                <th className={`${inter.className} px-5 pb-[13px] pt-3 text-[11px] font-medium uppercase tracking-[0.44px] text-[#5B6B7F]`}>
+                  Visibility
+                </th>
+                <th className="px-5 pb-[13px] pt-3"></th>
               </tr>
             </thead>
             <tbody>
               {files.map((file) => {
                 const v = VISIBILITY_LABEL[file.visibility];
                 return (
-                  <tr key={file.id} className="border-b border-slate/5 last:border-0">
-                    <td className="px-4 py-2 text-slate">{file.type}</td>
-                    <td className="px-4 py-2 text-slate/70">{file.uploader.name}</td>
-                    <td className="px-4 py-2 text-slate/70">{formatDate(file.createdAt)}</td>
-                    <td className="px-4 py-2">
+                  <tr key={file.id} className="border-b border-[#DCE4EC] last:border-0">
+                    <td className={`${inter.className} px-5 py-[17px] text-[13px] text-[#1E293B]`}>{file.type}</td>
+                    <td className={`${inter.className} px-5 py-[17px] text-[13px] text-[#1E293B]`}>
+                      {file.uploader.name}
+                    </td>
+                    <td className={`${ibmPlexMono.className} px-5 py-[16.5px] text-[13px] text-[#1E293B]`}>
+                      {formatDate(file.createdAt)}
+                    </td>
+                    <td className="px-5 py-3.5">
                       <Badge label={v.label} tone={v.tone} />
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-5 py-[17px] text-right">
                       <button
                         onClick={() => handleView(file.id)}
                         disabled={openingId === file.id}
-                        className="text-sky hover:underline disabled:opacity-50"
+                        className={`${inter.className} text-[12px] font-semibold text-sky hover:underline disabled:opacity-50`}
                       >
                         {openingId === file.id ? "Opening..." : "View"}
                       </button>
