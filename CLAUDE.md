@@ -24,4 +24,7 @@ Full spec lives in `docs/PRD.md`. Reference sections by number in prompts instea
 - An approved Estimate is immutable — changes create a new Change Order record, not an edit
 
 ## Brand
-Navy `#16324F`, Orange `#F28C28`, Sky Blue `#38BDF8`, Green `#22C55E`, Slate `#1E293B`, off-white `#F8FAFC`. Fonts: Inter (UI), Manrope (headings).
+Navy `#16324F`, Orange `#F28C28`, Sky Blue `#38BDF8`, Green `#22C55E`, Slate `#1E293B`, off-white `#F8FAFC`. Fonts: Space Grotesk (headings), Inter (body), IBM Plex Mono (data/numbers).
+
+## Figma
+File key: `jmbL1MwimhBuJsMN4Wit8y`
