@@ -151,7 +151,7 @@ export default function PortalOverviewPage() {
             <button
               onClick={handleApprove}
               disabled={busy}
-              className={`${inter.className} flex-1 rounded-md bg-orange py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50`}
+              className={`${inter.className} flex-1 rounded-md bg-green py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50`}
             >
               {busy ? "Working..." : "Approve"}
             </button>

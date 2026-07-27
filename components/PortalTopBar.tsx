@@ -8,18 +8,18 @@ export function PortalTopBar({ onLogout }: { onLogout: () => void }) {
   const { overview } = usePortal();
 
   return (
-    <header className="border-b border-[#DCE4EC] bg-white px-5 py-[13px]">
+    <header className="bg-navy px-5 py-[13px]">
       <div className="flex items-center justify-between">
-        <span className={`${spaceGrotesk.className} text-[19px] text-navy`}>BuildFlow Pro</span>
+        <span className={`${spaceGrotesk.className} text-[19px] text-white`}>BuildFlow Pro</span>
         <div className="flex items-center gap-3">
-          <NotificationBell />
-          <button onClick={onLogout} className="text-sm font-medium text-slate/60 hover:text-slate">
+          <NotificationBell variant="dark" />
+          <button onClick={onLogout} className="text-sm font-medium text-white/70 hover:text-white">
             Log out
           </button>
         </div>
       </div>
       {overview && (
-        <h1 className={`${ibmPlexMono.className} mt-1 text-[12px] uppercase tracking-[0.5px] text-[#5B6B7F]`}>
+        <h1 className={`${ibmPlexMono.className} mt-1 text-[12px] uppercase tracking-[0.5px] text-white/75`}>
           {overview.project.name} &middot; {overview.project.address}
         </h1>
       )}
