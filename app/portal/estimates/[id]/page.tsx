@@ -133,7 +133,7 @@ export default function PortalEstimateDetailPage({ params }: { params: Promise<{
           <button
             onClick={handleApprove}
             disabled={busy}
-            className="flex-1 rounded-md bg-orange px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className="flex-1 rounded-md bg-green px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
           >
             {busy ? "Working..." : "Approve"}
           </button>
