@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
 import { Badge } from "@/components/Badge";
-import { EstimateDetail } from "@/components/EstimateDetail";
 import { SectionDivider } from "@/components/SectionDivider";
 import { estimateStatusBadge } from "@/lib/estimates/badges";
 import { ibmPlexMono, inter } from "@/lib/fonts";
 import type { EstimateDetail as EstimateDetailType, EstimateSummary } from "@/lib/estimates/types";
 
 export function EstimateList({ projectId, accessToken }: { projectId: string; accessToken: string | null }) {
+  const router = useRouter();
   const [estimates, setEstimates] = useState<EstimateSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
   function load() {
@@ -32,8 +33,7 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
         accessToken,
         { method: "POST", body: JSON.stringify({ lineItems: [] }) }
       );
-      load();
-      setSelectedId(estimate.id);
+      router.push(`/estimates/${estimate.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create estimate");
     } finally {
@@ -41,25 +41,8 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
     }
   }
 
-  if (selectedId) {
-    return (
-      <EstimateDetail
-        estimateId={selectedId}
-        accessToken={accessToken}
-        onClose={() => {
-          setSelectedId(null);
-          load();
-        }}
-        onArchived={() => {
-          setSelectedId(null);
-          load();
-        }}
-      />
-    );
-  }
-
   return (
-    <div className="flex w-full flex-col items-start gap-4">
+    <div id="estimates" className="flex w-full scroll-mt-6 flex-col items-start gap-4">
       <SectionDivider
         label="Estimates"
         className="pt-7"
@@ -110,12 +93,12 @@ export function EstimateList({ projectId, accessToken }: { projectId: string; ac
                       {new Date(estimate.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-[17px] text-right">
-                      <button
-                        onClick={() => setSelectedId(estimate.id)}
+                      <Link
+                        href={`/estimates/${estimate.id}`}
                         className={`${inter.className} text-[12px] font-semibold text-sky hover:underline`}
                       >
                         View
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 );

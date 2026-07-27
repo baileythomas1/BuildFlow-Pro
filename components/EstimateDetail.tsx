@@ -32,11 +32,13 @@ export function EstimateDetail({
   accessToken,
   onClose,
   onArchived,
+  onLoaded,
 }: {
   estimateId: string;
   accessToken: string | null;
   onClose: () => void;
   onArchived: () => void;
+  onLoaded?: (estimate: EstimateDetailType) => void;
 }) {
   const [estimate, setEstimate] = useState<EstimateDetailType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export function EstimateDetail({
       .then((data) => {
         setEstimate(data.estimate);
         setTitleInput(data.estimate.title ?? "");
+        onLoaded?.(data.estimate);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Failed to load estimate"));
   }
