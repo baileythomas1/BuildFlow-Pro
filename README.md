@@ -1,5 +1,19 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Live Demo
+
+**[build-flow-pro-one.vercel.app](https://build-flow-pro-one.vercel.app)**
+
+Try it with any of these demo accounts — same password for all, each shows a different permission level against the same seeded project:
+
+| Role | Email | Password |
+|---|---|---|
+| Owner | owner@demo.buildflowpro.com | Demo1234! |
+| Admin | admin@demo.buildflowpro.com | Demo1234! |
+| Project Manager | pm@demo.buildflowpro.com | Demo1234! |
+| Employee | employee@demo.buildflowpro.com | Demo1234! |
+| Client (homeowner portal) | client@demo.buildflowpro.com | Demo1234! |
+
 ## Getting Started
 
 First, run the development server:
